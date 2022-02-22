@@ -51,4 +51,23 @@ const getRoute = async (origin, destination) => {
 	return coordinates;
 };
 
-export { getRoute };
+const getMap = async (origin, destination) => {
+	const parameters = {
+		"wp.0": origin,
+		"wp.1": destination,
+		avoid: "minimizeTolls",
+		key: API_KEY,
+		optmz: "timeWithTraffic",
+	};
+	const response = await axios
+		.get(
+			`https://dev.virtualearth.net/REST/v1/Imagery/Map/Road/Routes?wp.0=Seattle,WA;64;1&wp.1=Redmond,WA;66;2&key=${API_KEY}`
+		)
+		.then((response) => {
+			return response.data;
+		});
+
+	return response;
+};
+
+export { getRoute, getMap };
