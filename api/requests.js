@@ -2,72 +2,54 @@ import axios from "axios";
 
 const authenticatedSharedRequest = axios.create();
 const API_KEY =
-	"An-M9Xapv_1uHmLvgNXgpT35zIQW3Awc3IFwKW-widjHmzJB10nE8U1I1D404pzV";
+  "An-M9Xapv_1uHmLvgNXgpT35zIQW3Awc3IFwKW-widjHmzJB10nE8U1I1D404pzV";
 const baseURL = "http://dev.virtualearth.net/REST/v1/Routes";
 
 authenticatedSharedRequest.interceptors.request.use(
-	async (config) => {
-		config.headers["authorization"] = `Bearer ${API_KEY}`;
-		return config;
-	},
-	(error) => {
-		Promise.reject(error);
-	}
+  async (config) => {
+    config.headers["authorization"] = `Bearer ${API_KEY}`;
+    return config;
+  },
+  (error) => {
+    Promise.reject(error);
+  }
 );
 
-const getRoute = async (origin, destination) => {
-	const parameters = {
-		"wp.0": origin,
-		"wp.1": destination,
-		avoid: "minimizeTolls",
-		key: API_KEY,
-		optmz: "timeWithTraffic",
-		optWp: true,
-		ra: "routePath",
-	};
-	const response = await axios
-		.get(`http://dev.virtualearth.net/REST/V1/Routes/Driving`, {
-			params: parameters,
-		})
-		.then((response) => {
-			return response.data;
-		});
+const getDistanceMatrix = async (origins, destinations) => {
+  const parameters = {
+    origins: origins.toString(),
+    destinations: destinations.toString(),
+    key: API_KEY,
+  };
+  const response = await axios
+    .get(`https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix`, {
+      params: parameters,
+    })
+    .then((response) => {
+      return response.data;
+    });
 
-	const coordinates = {
-		startLatitude:
-			response.resourceSets[0].resources[0].routeLegs[0].actualStart
-				.coordinates[0],
-		startLongitude:
-			response.resourceSets[0].resources[0].routeLegs[0].actualStart
-				.coordinates[1],
-		endLatitude:
-			response.resourceSets[0].resources[0].routeLegs[0].actualEnd
-				.coordinates[0],
-		endLongitude:
-			response.resourceSets[0].resources[0].routeLegs[0].actualEnd
-				.coordinates[1],
-	};
-
-	return coordinates;
+  return response;
 };
 
-const getMap = async (origin, destination) => {
-	const parameters = {
-		"wp.0": origin,
-		"wp.1": destination,
-		avoid: "minimizeTolls",
-		key: API_KEY,
-		optmz: "timeWithTraffic",
-	};
-	const response = await axios
-		.get(
-			`https://dev.virtualearth.net/REST/v1/Imagery/Map/Road/Routes?wp.0=Seattle,WA;64;1&wp.1=Redmond,WA;66;2&key=${API_KEY}`
-		)
-		.then((response) => {
-			return response.data;
-		});
+const getCoords = async (location) => {
+  console.log(location);
+  const response = await axios
+    .get(
+      `https://dev.virtualearth.net/REST/v1/Locations/${location
+        .trim()
+        .replace(" ", "%")}`,
+      {
+        params: {
+          key: API_KEY,
+        },
+      }
+    )
+    .then((response) => {
+      return response.data;
+    });
 
-	return response;
+  return response;
 };
 
-export { getRoute, getMap };
+export { getDistanceMatrix, getCoords };
