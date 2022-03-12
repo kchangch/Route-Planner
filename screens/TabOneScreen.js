@@ -9,25 +9,41 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "../components/InputField";
 import { Button } from "react-native-elements";
-import { getCoords } from "../api/requests";
+import { getCoords, getDistanceMatrix } from "../api/requests";
+
+let locations = [];
+let coordinates = [];
 
 export default function TabOneScreen({ navigation }) {
-  const [origin, setOrigin] = useState("");
-  const [locations, setLocations] = useState([]);
-
-  const appendInput = (location) => {
-    setLocations((oldArray) => [...oldArray, location]);
-  };
+  const [origin, setOrigin] = useState("v5s1k3");
+  const [destination, setDestination] = useState("v5y0k2");
+  const [hasMoreStops, setHasMoreStops] = useState(false);
 
   const handleSubmit = async () => {
-    // const myCoords_start = await getCoords(origin);
-    // console.log(myCoords_start);
-    // const myCoords_end = await getCoords(destination);
-    // console.log(myCoords_end);
-    for (dest of locations) {
-      console.log(await getCoords(dest));
+    for (let location of locations) {
+      const current = await getCoords(location);
+      coordinates.push({
+        latitude: current.resourceSets[0].resources[0].point.coordinates[0],
+        longitude: current.resourceSets[0].resources[0].point.coordinates[1],
+      });
     }
-    // console.log("my coords", myCoords);
+    // coordinates.push({
+    //   [location]: current.resourceSets[0].resources[0].point.coordinates,
+    // });
+    // }
+
+    let distMatrix = await getDistanceMatrix(coordinates);
+    console.log(distMatrix);
+    // navigation.navigate("Map Router");
+  };
+
+  const handleAddLocation = async () => {
+    if (!hasMoreStops) {
+      locations.push(origin);
+      locations.push(destination);
+      return;
+    }
+    locations.push(destination);
   };
 
   return (
@@ -36,18 +52,41 @@ export default function TabOneScreen({ navigation }) {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View>
             <InputField
-              headerText={"Origin"}
-              value={origin}
-              callback={(text) => appendInput(text)}
-              placeholder={"Enter origin"}
+              headerText={!hasMoreStops ? "Origin" : "Extra destination"}
+              value={!hasMoreStops ? origin : destination}
+              callback={(text) =>
+                !hasMoreStops ? setOrigin(text) : setDestination(text)
+              }
+              placeholder={!hasMoreStops ? "Enter origin" : "Enter destination"}
             />
-            <InputField
-              headerText={"Destination"}
-              value={origin}
-              callback={(text) => appendInput(text)}
-              placeholder={"Enter destination"}
-            />
-            f
+            {!hasMoreStops ? (
+              <InputField
+                headerText={"Destination"}
+                value={destination}
+                callback={(text) => setDestination(text)}
+                placeholder={"Enter destination"}
+              />
+            ) : null}
+            <View>
+              <Button
+                containerStyle={{ borderRadius: 10 }}
+                buttonStyle={{
+                  paddingVertical: 15,
+                  backgroundColor: "#14889F",
+                }}
+                titleStyle={{
+                  fontWeight: "bold",
+                  color: "white",
+                }}
+                title="Add more location"
+                onPress={() => {
+                  handleAddLocation();
+                  setHasMoreStops(true);
+                  setDestination("");
+                }}
+              />
+            </View>
+            <View style={{ paddingBottom: 15 }} />
             <View>
               <Button
                 containerStyle={{ borderRadius: 10 }}
@@ -60,7 +99,10 @@ export default function TabOneScreen({ navigation }) {
                   color: "white",
                 }}
                 title="Calculate"
-                onPress={handleSubmit}
+                onPress={() => {
+                  handleAddLocation();
+                  handleSubmit();
+                }}
               />
             </View>
           </View>

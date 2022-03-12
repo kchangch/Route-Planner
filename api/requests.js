@@ -1,13 +1,12 @@
 import axios from "axios";
+import config from "../config";
 
 const authenticatedSharedRequest = axios.create();
-const API_KEY =
-  "An-M9Xapv_1uHmLvgNXgpT35zIQW3Awc3IFwKW-widjHmzJB10nE8U1I1D404pzV";
 const baseURL = "http://dev.virtualearth.net/REST/v1/Routes";
 
 authenticatedSharedRequest.interceptors.request.use(
   async (config) => {
-    config.headers["authorization"] = `Bearer ${API_KEY}`;
+    config.headers["authorization"] = `Bearer ${config.API_KEY}`;
     return config;
   },
   (error) => {
@@ -15,15 +14,22 @@ authenticatedSharedRequest.interceptors.request.use(
   }
 );
 
-const getDistanceMatrix = async (origins, destinations) => {
-  const parameters = {
-    origins: origins.toString(),
-    destinations: destinations.toString(),
-    key: API_KEY,
+const getDistanceMatrix = async (origins) => {
+  const body = {
+    origins: origins,
+    travelMode: "driving",
+  };
+  console.log(config.API_KEY);
+  const headers = {
+    "Content-Length": "450",
+    "Content-Type": "application / json",
   };
   const response = await axios
-    .get(`https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix`, {
-      params: parameters,
+    .post(`https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix`, body, {
+      headers: headers,
+      params: {
+        key: config.API_KEY,
+      },
     })
     .then((response) => {
       return response.data;
@@ -41,7 +47,7 @@ const getCoords = async (location) => {
         .replace(" ", "%")}`,
       {
         params: {
-          key: API_KEY,
+          key: config.API_KEY,
         },
       }
     )
