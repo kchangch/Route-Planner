@@ -27,14 +27,44 @@ export default function TabOneScreen({ navigation }) {
         longitude: current.resourceSets[0].resources[0].point.coordinates[1],
       });
     }
-    // coordinates.push({
-    //   [location]: current.resourceSets[0].resources[0].point.coordinates,
-    // });
-    // }
+    let distMatrix = (await getDistanceMatrix(coordinates)).resourceSets[0]
+      .resources[0].results;
+    let shortestSequence = optimizeRoutes(distMatrix);
+    navigation.navigate("Map Router", {
+      travelSequence: shortestSequence,
+      locations: locations,
+    });
+  };
 
-    let distMatrix = await getDistanceMatrix(coordinates);
-    console.log(distMatrix);
-    // navigation.navigate("Map Router");
+  const optimizeRoutes = (distMatrix) => {
+    let shortestSequence = [0];
+    for (let i = 0; i < locations.length - 1; i++) {
+      shortestSequence.push(
+        distMatrix
+          .filter((dist) => {
+            return (
+              dist.originIndex === shortestSequence[i] &&
+              !shortestSequence.includes(dist.destinationIndex)
+            );
+          })
+          .reduce((prev, curr) => {
+            return prev.travelDistance > curr.travelDistance &&
+              !shortestSequence.includes(curr.destinationIndex)
+              ? curr
+              : prev;
+          }).destinationIndex
+      );
+    }
+
+    return shortestSequence;
+  };
+
+  const optimizeRoutess = (distMatrix) => {
+    let shortestSequence = [0];
+    let totalDistance = 0;
+    let calculatedDistances = {};
+
+    return shortestSequence;
   };
 
   const handleAddLocation = async () => {

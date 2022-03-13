@@ -19,7 +19,6 @@ const getDistanceMatrix = async (origins) => {
     origins: origins,
     travelMode: "driving",
   };
-  console.log(config.API_KEY);
   const headers = {
     "Content-Length": "450",
     "Content-Type": "application / json",

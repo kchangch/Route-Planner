@@ -12,17 +12,13 @@ const screenOptionStyle = {
 
 const TabOneStackNavigator = () => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Home"
-        component={TabOneScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Map Router"
-        component={RouteScreen}
-        options={{ headerShown: false }}
-      />
+    <Stack.Navigator
+      screenOptions={{
+        ...screenOptionStyle,
+      }}
+    >
+      <Stack.Screen name="Route Planner" component={TabOneScreen} />
+      <Stack.Screen name="Map Router" component={RouteScreen} />
     </Stack.Navigator>
   );
 };
